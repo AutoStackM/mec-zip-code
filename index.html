@@ -561,6 +561,77 @@
         .results.show .grid, .results.show .actions .btn,
         .site-footer { animation: none; }
       }
+
+      /* ---------- Bright & clean colour layer ---------- */
+      body {
+        background-image: linear-gradient(155deg, rgba(130, 195, 65, .20), rgba(255, 255, 255, 0) 34%, rgba(56, 189, 248, .16) 68%, rgba(167, 139, 250, .14) 88%, rgba(244, 114, 182, .10));
+        background-size: 230% 230%;
+      }
+      .topbar {
+        background: linear-gradient(90deg, #22c55e, #14b8a6, #0ea5e9, #8b5cf6, #ec4899, #22c55e);
+        background-size: 300% 100%;
+        animation: colourFlow 7s linear infinite;
+      }
+      @keyframes colourFlow { to { background-position: 300% 0; } }
+
+      .hero {
+        background-image:
+          radial-gradient(rgba(255, 255, 255, .18) 1.2px, transparent 1.3px),
+          linear-gradient(120deg, #15803d 0%, #0d9488 38%, #0284c7 72%, #7c3aed 115%);
+        background-size: 22px 22px, 210% 210%;
+        animation: colourHero 12s ease-in-out infinite alternate;
+      }
+      @keyframes colourHero {
+        from { background-position: 0 0, 0% 45%; }
+        to   { background-position: 0 0, 95% 55%; }
+      }
+      @media (prefers-color-scheme: dark) {
+        .hero {
+          background-image:
+            radial-gradient(rgba(255, 255, 255, .12) 1.2px, transparent 1.3px),
+            linear-gradient(120deg, #14532d 0%, #134e4a 38%, #0c4a6e 72%, #4c1d95 115%);
+          background-size: 22px 22px, 210% 210%;
+        }
+      }
+
+      .btn-primary {
+        background: linear-gradient(90deg, #16a34a, #0d9488, #0284c7, #16a34a);
+        background-size: 260% 100%;
+        animation: colourFlow 6s linear infinite;
+        box-shadow: 0 8px 20px rgba(13, 148, 136, .38);
+      }
+      .btn-primary:hover {
+        background: linear-gradient(90deg, #15803d, #0f766e, #0369a1, #15803d);
+        background-size: 260% 100%;
+      }
+      @media (prefers-color-scheme: dark) {
+        .btn-primary { background: linear-gradient(90deg, #4ade80, #2dd4bf, #38bdf8, #4ade80); background-size: 260% 100%; }
+        .btn-primary:hover { background: linear-gradient(90deg, #86efac, #5eead4, #7dd3fc, #86efac); background-size: 260% 100%; }
+      }
+
+      .grid .card:nth-child(2) .card-head {
+        background: linear-gradient(90deg, #0369a1, #7c3aed 130%);
+      }
+      @media (prefers-color-scheme: dark) {
+        .grid .card:nth-child(2) .card-head { background: linear-gradient(90deg, #0c4a6e, #4c1d95 130%); }
+      }
+
+      .examples .chip:nth-of-type(1) { background: #dcfce7; }
+      .examples .chip:nth-of-type(2) { background: #e0f2fe; }
+      .examples .chip:nth-of-type(3) { background: #fef9c3; }
+      .examples .chip:nth-of-type(4) { background: #fae8ff; }
+      .examples .chip:nth-of-type(5) { background: #ffe4e6; }
+      .examples .chip:nth-of-type(6) { background: #ffedd5; }
+      @media (prefers-color-scheme: dark) {
+        .examples .chip { background: var(--chip-bg); }
+      }
+
+      .history h2 { color: #0d9488; }
+      @media (prefers-color-scheme: dark) { .history h2 { color: #2dd4bf; } }
+
+      @media (prefers-reduced-motion: reduce) {
+        body, .topbar, .hero, .btn-primary { animation: none; }
+      }
     </style>
   </head>
   <body>
