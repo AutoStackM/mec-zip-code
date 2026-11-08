@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>ZIP Lookup + Test Name Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --surface: #ffffff;
+        --surface-2: #F4FBEC;
+        --ink: #212b31;
+        --heading: #003863;
+        --ink-soft: #43545e;
+        --ink-faint: #6d7f88;
+        --line: #d8e3d0;
+        --accent: #40762D;
+        --accent-dark: #335f23;
+        --accent-bright: #82C341;
+        --accent-ink: #ffffff;
+        --accent-soft: #F4FBEC;
+        --warn-bg: #fdf3e0;
+        --warn-ink: #7a5410;
+        --err-bg: #fdeceb;
+        --err-ink: #8c2b21;
+        --chip-bg: #F4FBEC;
+        --shadow: 0 1px 2px rgba(0, 56, 99, .05), 0 8px 24px rgba(0, 56, 99, .06);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1b26;
+          --surface: #142633;
+          --surface-2: #1c3020;
+          --ink: #eef3f6;
+          --heading: #cfe6f5;
+          --ink-soft: #b9c9d2;
+          --ink-faint: #8ba0ad;
+          --line: #2f4a3a;
+          --accent: #82C341;
+          --accent-dark: #a8d97a;
+          --accent-bright: #82C341;
+          --accent-ink: #0d2406;
+          --accent-soft: #1c3020;
+          --warn-bg: #3a2f14;
+          --warn-ink: #f0cd8a;
+          --err-bg: #40201c;
+          --err-ink: #f2a49c;
+          --chip-bg: #1c3020;
+          --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.3);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Museo Sans", "MuseoSans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+        line-height: 1.5;
+        border-top: 6px solid var(--accent-bright);
+      }
+      .wrap { max-width: 1060px; margin: 0 auto; padding: 28px 18px 56px; }
+
+      .brand-line {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        margin-bottom: 14px;
+      }
+      @media (prefers-color-scheme: dark) { .brand-line { color: var(--accent-bright); } }
+      .brand-line span { color: var(--heading); font-weight: 600; font-size: 13px; letter-spacing: .02em; margin-left: 10px; vertical-align: 3px; }
+      header.intro { margin-bottom: 22px; }
+      header.intro h1 {
+        font-size: clamp(26px, 4.5vw, 38px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.12;
+        margin: 0;
+        color: var(--heading);
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      /* ---------- Lookup form ---------- */
+      .lookup { padding: 20px; margin-bottom: 18px; }
+      .lookup label {
+        display: block;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin-bottom: 8px;
+      }
+      .lookup-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .zip-input {
+        flex: 1 1 200px;
+        min-width: 0;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: .18em;
+        padding: 12px 16px;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--ink);
+      }
+      .zip-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(130, 195, 65, .28); }
+      .zip-input::placeholder { color: var(--ink-faint); letter-spacing: .1em; }
+      .btn {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 15px;
+        padding: 12px 22px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+        transition: background .15s ease, transform .05s ease;
+      }
+      .btn:active { transform: translateY(1px); }
+      .btn-primary { background: var(--accent); color: var(--accent-ink); }
+      .btn-primary:hover { background: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .btn-primary:hover { background: var(--accent-bright); } }
+      .btn-primary:disabled { opacity: .55; cursor: wait; }
+      .btn-ghost {
+        background: var(--surface);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      @media (prefers-color-scheme: dark) { .btn-ghost { color: var(--accent-bright); border-color: var(--accent-bright); } }
+      .btn-ghost:hover { background: var(--surface-2); }
+      .btn-small { padding: 8px 14px; font-size: 13.5px; border-radius: 8px; }
+
+      .examples { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .examples span { font-size: 13px; color: var(--ink-faint); margin-right: 2px; }
+      .chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 13px;
+        background: var(--chip-bg);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 5px 12px;
+        cursor: pointer;
+      }
+      .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+      .status { margin-top: 14px; font-size: 14.5px; display: none; border-radius: 10px; padding: 10px 14px; }
+      .status.show { display: block; }
+      .status.error { background: var(--err-bg); color: var(--err-ink); }
+      .status.warn { background: var(--warn-bg); color: var(--warn-ink); }
+      .status.info { background: var(--accent-soft); color: var(--ink); }
+
+      .spinner {
+        width: 16px; height: 16px; border-radius: 50%;
+        border: 2.5px solid currentColor; border-top-color: transparent;
+        animation: spin .7s linear infinite; flex: none;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        .spinner { animation: none; }
+        .btn { transition: none; }
+      }
+
+      /* ---------- Results ---------- */
+      .results { display: none; }
+      .results.show { display: block; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+
+      .card { padding: 0 0 12px; overflow: hidden; }
+      .card-head {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px; margin-bottom: 6px; flex-wrap: wrap;
+        background: var(--accent);
+        color: #ffffff;
+        padding: 13px 20px;
+      }
+      @media (prefers-color-scheme: dark) { .card-head { background: #2f5622; } }
+      .card-head h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin: 0; color: #ffffff; }
+      .card-head .tag {
+        font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+        color: #14300a; background: var(--accent-bright);
+        padding: 3px 9px; border-radius: 999px;
+      }
+      dl.fields { margin: 0; padding: 6px 20px 0; }
+      .field {
+        display: grid; grid-template-columns: 118px 1fr auto; gap: 10px; align-items: baseline;
+        padding: 8px 8px; border-top: 1px solid var(--line);
+        margin: 0 -8px;
+      }
+      .field:nth-child(even) { background: var(--surface-2); }
+      .field:first-child { border-top: none; }
+      .field dt { font-size: 13px; font-weight: 600; color: var(--ink-faint); }
+      .field dd {
+        margin: 0; font-size: 15.5px; font-weight: 600; word-break: break-word;
+      }
+      .field dd.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 500; font-size: 14.5px; }
+      .copy-btn {
+        appearance: none; border: none; background: none; cursor: pointer;
+        color: var(--ink-faint); font-family: inherit; font-size: 12.5px; font-weight: 600;
+        padding: 4px 6px; border-radius: 6px; white-space: nowrap;
+      }
+      .copy-btn:hover { color: var(--accent); background: var(--accent-soft); }
+
+      .actions {
+        display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px;
+      }
+      .actions .btn { flex: 1 1 auto; }
+      @media (max-width: 520px) { .actions .btn { flex-basis: 100%; } }
+
+      /* ---------- History ---------- */
+      .history { margin-top: 18px; padding: 20px; display: none; }
+      .history.show { display: block; }
+      .history h2 { font-size: 16px; font-weight: 800; margin: 0 0 6px; color: var(--heading); }
+      .history p { margin: 0 0 12px; font-size: 13.5px; color: var(--ink-faint); }
+      .history-list { list-style: none; margin: 0; padding: 0; }
+      .history-list li { border-top: 1px solid var(--line); }
+      .history-list li:first-child { border-top: none; }
+      .history-item {
+        width: 100%; text-align: left; appearance: none; border: none; background: none;
+        cursor: pointer; font-family: inherit; color: var(--ink);
+        display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline;
+        padding: 10px 4px; border-radius: 8px;
+      }
+      .history-item:hover { background: var(--surface-2); }
+      .history-item .who { font-weight: 700; font-size: 15px; }
+      .history-item .where { color: var(--ink-soft); font-size: 14px; }
+      .history-item .zipv { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--ink-faint); margin-left: auto; }
+
+      .toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(16px);
+        background: var(--ink); color: var(--bg);
+        font-size: 14px; font-weight: 600;
+        padding: 10px 18px; border-radius: 999px;
+        opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+        max-width: calc(100vw - 32px); text-align: center; z-index: 10;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand-line">MEC Zip Code<span>ZIP Lookup · Test Data</span></div>
+      <header class="intro">
+        <h1>ZIP Lookup + Test Name Generator</h1>
+      </header>
+
+      <section class="panel lookup" aria-label="ZIP code lookup">
+        <label for="zipInput">US ZIP code</label>
+        <div class="lookup-row">
+          <input class="zip-input" id="zipInput" type="text" inputmode="numeric" autocomplete="off"
+                 maxlength="5" placeholder="e.g. 10001" aria-describedby="statusBox" />
+          <button class="btn btn-primary" id="generateBtn" type="button">Look up ZIP &amp; generate person</button>
+        </div>
+        <div class="examples" aria-label="Example ZIP codes">
+          <span>Try:</span>
+          <button class="chip" type="button" data-zip="10001">10001 · New York</button>
+          <button class="chip" type="button" data-zip="60601">60601 · Chicago</button>
+          <button class="chip" type="button" data-zip="77002">77002 · Houston</button>
+          <button class="chip" type="button" data-zip="33101">33101 · Miami</button>
+          <button class="chip" type="button" data-zip="90210">90210 · Beverly Hills</button>
+          <button class="chip" type="button" data-zip="02108">02108 · Boston</button>
+        </div>
+        <div class="status" id="statusBox" role="status" aria-live="polite"></div>
+      </section>
+
+      <div class="results" id="results">
+        <div class="grid">
+          <section class="panel card" aria-label="Generated test person">
+            <div class="card-head">
+              <h2 id="personName">Test person</h2>
+            </div>
+            <dl class="fields" id="personFields"></dl>
+          </section>
+
+          <section class="panel card" aria-label="ZIP code location details">
+            <div class="card-head">
+              <h2>ZIP details</h2>
+              <span class="tag">Live lookup</span>
+            </div>
+            <dl class="fields" id="zipFields"></dl>
+          </section>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="newPersonBtn" type="button">↻ Generate a new person for this ZIP</button>
+          <button class="btn btn-ghost" id="copyTextBtn" type="button">Copy full record</button>
+          <button class="btn btn-ghost" id="copyJsonBtn" type="button">Copy as JSON</button>
+        </div>
+      </div>
+
+      <section class="panel history" id="historyPanel" aria-label="Records generated in this session">
+        <h2>Generated this session</h2>
+        <p>Click any record to view it again. This list clears when the page is closed.</p>
+        <ul class="history-list" id="historyList"></ul>
+      </section>
+
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var zipInput = document.getElementById("zipInput");
+        var generateBtn = document.getElementById("generateBtn");
+        var newPersonBtn = document.getElementById("newPersonBtn");
+        var statusBox = document.getElementById("statusBox");
+        var results = document.getElementById("results");
+        var personNameEl = document.getElementById("personName");
+        var personFields = document.getElementById("personFields");
+        var zipFields = document.getElementById("zipFields");
+        var historyPanel = document.getElementById("historyPanel");
+        var historyList = document.getElementById("historyList");
+        var toast = document.getElementById("toast");
+
+        var current = null;   // { zipData, person }
+        var zipCache = {};    // zip -> zipData
+        var history = [];     // generated records, newest first
+        var toastTimer = null;
+
+        /* ---------------- Local fallback data (used only if RandomUser.me is unreachable) ---------------- */
+        var FALLBACK_FIRST = ["James","Mary","Robert","Patricia","John","Jennifer","Michael","Linda","David","Elizabeth","William","Barbara","Richard","Susan","Joseph","Jessica","Thomas","Sarah","Charles","Karen","Daniel","Nancy","Matthew","Lisa","Anthony","Betty","Mark","Margaret","Donald","Sandra","Steven","Ashley","Paul","Kimberly","Andrew","Emily","Kenneth","Michelle","Kevin","Dorothy","Brian","Amanda","George","Melissa","Timothy","Deborah","Ronald","Stephanie","Gary","Rebecca","Jason","Sharon","Jeffrey","Laura","Ryan","Cynthia","Jacob","Kathleen","Nicholas","Amy"];
+        var FALLBACK_LAST = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin","Lee","Perez","Thompson","White","Harris","Sanchez","Clark","Ramirez","Lewis","Robinson","Walker","Young","Allen","King","Wright","Scott","Torres","Nguyen","Hill","Flores","Green","Adams","Nelson","Baker","Hall","Rivera","Campbell","Mitchell","Carter","Roberts","Gomez","Phillips","Evans","Turner","Diaz","Parker","Cruz","Edwards","Collins","Reyes","Stewart","Morris","Morales","Murphy","Cook"];
+        var FALLBACK_STREETS = ["Main St","Oak Ave","Maple Dr","Cedar Ln","Elm St","Washington Ave","Lincoln Blvd","Park Ave","Hillcrest Dr","Sunset Blvd","River Rd","Highland Ave","Chestnut St","Walnut Ave","Spring St","Willow Creek Dr","Meadow Ln","Franklin St","Jefferson Ave","Madison St","Lakeview Dr","Pine St","Birchwood Ln","Magnolia Ave","Dogwood Dr","Harrison St","Monroe St","Adams Ave","Jackson St","Ridge Rd"];
+        var FALLBACK_AREAS = ["212","312","415","512","617","704","813","917","206","303"];
+
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+        function fallbackPerson() {
+          var year = 1950 + Math.floor(Math.random() * 55);         // 1950–2004
+          var month = 1 + Math.floor(Math.random() * 12);
+          var day = 1 + Math.floor(Math.random() * 28);
+          var dob = new Date(Date.UTC(year, month - 1, day));
+          var age = Math.floor((Date.now() - dob.getTime()) / 31557600000);
+          var num = 100 + Math.floor(Math.random() * 9899);
+          return {
+            firstName: pick(FALLBACK_FIRST),
+            middleName: pick(FALLBACK_FIRST),
+            lastName: pick(FALLBACK_LAST),
+            gender: "",
+            dobDate: dob,
+            age: age,
+            phone: "(" + pick(FALLBACK_AREAS) + ") 555-01" + String(Math.floor(Math.random() * 100)).padStart(2, "0"),
+            street: num + " " + pick(FALLBACK_STREETS),
+            source: "local"
+          };
+        }
+
+        /* ---------------- Helpers ---------------- */
+        function showStatus(kind, html) {
+          statusBox.className = "status show " + kind;
+          statusBox.innerHTML = html;
+        }
+        function clearStatus() {
+          statusBox.className = "status";
+          statusBox.innerHTML = "";
+        }
+        function showToast(msg) {
+          toast.textContent = msg;
+          toast.classList.add("show");
+          if (toastTimer) clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 2200);
+        }
+        function copyText(text, label) {
+          function done() { showToast(label + " copied"); }
+          function fallbackCopy() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed"; ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); }
+            catch (e) { showToast("Copy failed — select the text manually"); }
+            document.body.removeChild(ta);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, fallbackCopy);
+          } else { fallbackCopy(); }
+        }
+        function fmtDate(d) {
+          var m = String(d.getUTCMonth() + 1).padStart(2, "0");
+          var day = String(d.getUTCDate()).padStart(2, "0");
+          return m + "/" + day + "/" + d.getUTCFullYear();
+        }
+        function esc(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+        function fieldRow(label, value, opts) {
+          opts = opts || {};
+          var v = (value === undefined || value === null || value === "") ? "—" : value;
+          var ddClass = opts.mono ? ' class="mono"' : "";
+          var copyBtn = (v !== "—")
+            ? '<button type="button" class="copy-btn" data-copy="' + esc(v) + '" data-label="' + esc(label) + '">Copy</button>'
+            : "";
+          return '<div class="field"><dt>' + esc(label) + '</dt><dd' + ddClass + '>' + esc(v) + '</dd>' + copyBtn + '</div>';
+        }
+
+        /* ---------------- API calls ---------------- */
+        function fetchZip(zip) {
+          if (zipCache[zip]) return Promise.resolve(zipCache[zip]);
+          return fetch("https://api.zippopotam.us/us/" + encodeURIComponent(zip))
+            .then(function (r) {
+              if (r.status === 404) { var e = new Error("notfound"); e.code = "notfound"; throw e; }
+              if (!r.ok) throw new Error("ziphttp " + r.status);
+              return r.json();
+            })
+            .then(function (data) {
+              var place = data.places && data.places[0];
+              if (!place) { var e2 = new Error("notfound"); e2.code = "notfound"; throw e2; }
+              var zd = {
+                zip: data["post code"],
+                city: place["place name"],
+                state: place["state"],
+                stateAbbr: place["state abbreviation"],
+                country: data["country"],
+                lat: place["latitude"],
+                lon: place["longitude"],
+                allPlaces: data.places.map(function (p) { return p["place name"]; }),
+                county: null
+              };
+              zipCache[zip] = zd;
+              // County from the FCC census geocoder using the ZIP's coordinates (best effort).
+              return fetch("https://geo.fcc.gov/api/census/block/find?latitude=" + encodeURIComponent(zd.lat) +
+                           "&longitude=" + encodeURIComponent(zd.lon) + "&showall=false&format=json")
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (cj) {
+                  if (cj && cj.County && cj.County.name) zd.county = cj.County.name;
+                  return zd;
+                })
+                .catch(function () { return zd; });
+            });
+        }
+
+        function fetchPerson() {
+          return fetch("https://randomuser.me/api/?nat=us&inc=name,location,dob,phone,gender")
+            .then(function (r) {
+              if (!r.ok) throw new Error("personhttp " + r.status);
+              return r.json();
+            })
+            .then(function (data) {
+              var u = data.results && data.results[0];
+              if (!u) throw new Error("empty person");
+              var dob = new Date(u.dob.date);
+              return {
+                firstName: u.name.first,
+                middleName: pick(FALLBACK_FIRST),
+                lastName: u.name.last,
+                gender: u.gender ? (u.gender.charAt(0).toUpperCase() + u.gender.slice(1)) : "",
+                dobDate: dob,
+                age: u.dob.age,
+                phone: u.phone,
+                street: u.location.street.number + " " + u.location.street.name,
+                source: "randomuser"
+              };
+            })
+            .catch(function () { return fallbackPerson(); });
+        }
+
+        /* ---------------- Rendering ---------------- */
+        function fullAddress(rec) {
+          var z = rec.zipData, p = rec.person;
+          return p.street + ", " + z.city + ", " + z.stateAbbr + " " + z.zip;
+        }
+
+        function render(rec) {
+          current = rec;
+          var z = rec.zipData, p = rec.person;
+
+          personNameEl.textContent = p.firstName + " " + (p.middleName ? p.middleName + " " : "") + p.lastName;
+          var ph = "";
+          ph += fieldRow("First name", p.firstName);
+          if (p.middleName) ph += fieldRow("Middle name", p.middleName);
+          ph += fieldRow("Last name", p.lastName);
+          if (p.gender) ph += fieldRow("Gender", p.gender);
+          ph += fieldRow("Date of birth", fmtDate(p.dobDate) + "  (age " + p.age + ")", { mono: true });
+          ph += fieldRow("Phone", p.phone, { mono: true });
+          ph += fieldRow("Street address", p.street);
+          ph += fieldRow("City", z.city);
+          ph += fieldRow("State", z.state + " (" + z.stateAbbr + ")");
+          ph += fieldRow("ZIP code", z.zip, { mono: true });
+          ph += fieldRow("County", z.county);
+          ph += fieldRow("Full address", fullAddress(rec));
+          personFields.innerHTML = ph;
+
+          var zh = "";
+          zh += fieldRow("ZIP code", z.zip, { mono: true });
+          zh += fieldRow("City", z.city);
+          zh += fieldRow("State", z.state);
+          zh += fieldRow("State code", z.stateAbbr, { mono: true });
+          zh += fieldRow("County", z.county);
+          zh += fieldRow("Country", z.country);
+          zh += fieldRow("Latitude", z.lat, { mono: true });
+          zh += fieldRow("Longitude", z.lon, { mono: true });
+          if (z.allPlaces.length > 1) {
+            zh += fieldRow("Also served", z.allPlaces.join(", "));
+          }
+          zipFields.innerHTML = zh;
+
+          results.classList.add("show");
+        }
+
+        function recordAsText(rec) {
+          var z = rec.zipData, p = rec.person;
+          var lines = [
+            "First Name: " + p.firstName,
+            "Middle Name: " + (p.middleName || ""),
+            "Last Name: " + p.lastName,
+            "Full Name: " + p.firstName + " " + (p.middleName ? p.middleName + " " : "") + p.lastName,
+            "Date of Birth: " + fmtDate(p.dobDate),
+            "Age: " + p.age,
+            "Phone: " + p.phone,
+            "Street Address: " + p.street,
+            "City: " + z.city,
+            "State: " + z.state + " (" + z.stateAbbr + ")",
+            "ZIP Code: " + z.zip,
+            "County: " + (z.county || ""),
+            "Full Address: " + fullAddress(rec)
+          ];
+          if (p.gender) lines.splice(3, 0, "Gender: " + p.gender);
+          return lines.join("\n");
+        }
+
+        function recordAsJson(rec) {
+          var z = rec.zipData, p = rec.person;
+          return JSON.stringify({
+            firstName: p.firstName,
+            middleName: p.middleName || undefined,
+            lastName: p.lastName,
+            fullName: p.firstName + " " + (p.middleName ? p.middleName + " " : "") + p.lastName,
+            gender: p.gender || undefined,
+            dateOfBirth: fmtDate(p.dobDate),
+            age: p.age,
+            phone: p.phone,
+            streetAddress: p.street,
+            city: z.city,
+            state: z.state,
+            stateCode: z.stateAbbr,
+            zipCode: z.zip,
+            county: z.county || undefined,
+            fullAddress: fullAddress(rec),
+            latitude: z.lat,
+            longitude: z.lon
+          }, null, 2);
+        }
+
+        function addToHistory(rec) {
+          history.unshift(rec);
+          if (history.length > 10) history.length = 10;
+          historyList.innerHTML = "";
+          history.forEach(function (r, i) {
+            var li = document.createElement("li");
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "history-item";
+            btn.innerHTML =
+              '<span class="who">' + esc(r.person.firstName + " " + (r.person.middleName ? r.person.middleName + " " : "") + r.person.lastName) + '</span>' +
+              '<span class="where">' + esc(r.zipData.city + ", " + r.zipData.stateAbbr) +
+              (r.zipData.county ? " · " + esc(r.zipData.county) : "") + '</span>' +
+              '<span class="zipv">' + esc(r.zipData.zip) + '</span>';
+            btn.addEventListener("click", function () {
+              zipInput.value = r.zipData.zip;
+              clearStatus();
+              render(r);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+            li.appendChild(btn);
+            historyList.appendChild(li);
+          });
+          historyPanel.classList.add("show");
+        }
+
+        /* ---------------- Main actions ---------------- */
+        function setBusy(busy) {
+          generateBtn.disabled = busy;
+          newPersonBtn.disabled = busy;
+          generateBtn.innerHTML = busy
+            ? '<span class="spinner"></span> Looking up…'
+            : "Look up ZIP &amp; generate person";
+        }
+
+        function generate(zip) {
+          clearStatus();
+          if (!/^\d{5}$/.test(zip)) {
+            showStatus("error", "Please enter a valid 5-digit US ZIP code.");
+            zipInput.focus();
+            return;
+          }
+          setBusy(true);
+          Promise.all([fetchZip(zip), fetchPerson()])
+            .then(function (pair) {
+              var rec = { zipData: pair[0], person: pair[1] };
+              render(rec);
+              addToHistory(rec);
+              if (rec.person.source === "local") {
+                showStatus("warn", "The person generator was unreachable, so this record was generated locally instead — the ZIP, city, state and county are still live results.");
+              } else if (!rec.zipData.county) {
+                showStatus("info", "ZIP found. The county lookup didn’t return a result for this ZIP’s coordinates, so the county field is blank.");
+              }
+            })
+            .catch(function (err) {
+              if (err && err.code === "notfound") {
+                showStatus("error", "ZIP code <strong>" + esc(zip) + "</strong> was not found. Check the number and try again — e.g. 10001 (New York) or 90210 (Beverly Hills).");
+              } else {
+                showStatus("error", "The ZIP lookup service could not be reached. Check your connection and try again.");
+              }
+            })
+            .then(function () { setBusy(false); });
+        }
+
+        function newPerson() {
+          if (!current) return;
+          setBusy(true);
+          clearStatus();
+          fetchPerson().then(function (p) {
+            var rec = { zipData: current.zipData, person: p };
+            render(rec);
+            addToHistory(rec);
+            setBusy(false);
+            if (p.source === "local") {
+              showStatus("warn", "The person generator was unreachable, so this person was generated locally instead.");
+            }
+          });
+        }
+
+        /* ---------------- Wiring ---------------- */
+        generateBtn.addEventListener("click", function () { generate(zipInput.value.trim()); });
+        newPersonBtn.addEventListener("click", newPerson);
+        zipInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); generate(zipInput.value.trim()); }
+        });
+        zipInput.addEventListener("input", function () {
+          zipInput.value = zipInput.value.replace(/\D/g, "").slice(0, 5);
+        });
+        document.querySelectorAll(".chip").forEach(function (chip) {
+          chip.addEventListener("click", function () {
+            zipInput.value = chip.getAttribute("data-zip");
+            generate(chip.getAttribute("data-zip"));
+          });
+        });
+        document.getElementById("copyTextBtn").addEventListener("click", function () {
+          if (current) copyText(recordAsText(current), "Full record");
+        });
+        document.getElementById("copyJsonBtn").addEventListener("click", function () {
+          if (current) copyText(recordAsJson(current), "JSON record");
+        });
+        // Per-field copy buttons (event delegation — rows are re-rendered)
+        document.addEventListener("click", function (e) {
+          var btn = e.target.closest ? e.target.closest(".copy-btn") : null;
+          if (btn) copyText(btn.getAttribute("data-copy"), btn.getAttribute("data-label"));
+        });
+
+        zipInput.focus();
+      })();
+    </script>
+    <footer style="text-align:center;font-size:13px;color:#474B55;margin:26px 0 10px;">Author: Satheesan</footer>
+  </body>
+</html>
