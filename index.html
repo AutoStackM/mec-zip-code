@@ -484,9 +484,87 @@
         .btn:hover .spin-ic { animation: none; }
         .hero h1 { -webkit-text-fill-color: #ffffff; color: #ffffff; }
       }
+
+      /* ---------- Animation layer 3: whole page ---------- */
+      body {
+        border-top: none;
+        background-image: linear-gradient(160deg, rgba(130, 195, 65, .16), rgba(255, 255, 255, 0) 42%, rgba(0, 56, 99, .07) 82%, rgba(130, 195, 65, .12));
+        background-size: 220% 220%;
+        animation: bgPan 22s ease-in-out infinite alternate;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-image: linear-gradient(160deg, rgba(130, 195, 65, .10), rgba(0, 0, 0, 0) 42%, rgba(0, 139, 191, .08) 82%, rgba(130, 195, 65, .07));
+          background-size: 220% 220%;
+        }
+      }
+      @keyframes bgPan {
+        from { background-position: 0% 0%; }
+        to   { background-position: 100% 100%; }
+      }
+
+      .topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 6px;
+        z-index: 20;
+        background: linear-gradient(90deg, #2B511C, #82C341, #529535, #82C341, #2B511C);
+        background-size: 200% 100%;
+        animation: topSlide 6s linear infinite;
+      }
+      @keyframes topSlide { to { background-position: 200% 0; } }
+
+      .hero { padding-bottom: 42px; }
+      .wave {
+        position: absolute;
+        left: 0; bottom: 0;
+        width: 200%; height: 24px;
+        pointer-events: none;
+        animation: waveSlide 9s ease-in-out infinite alternate;
+      }
+      .wave svg { display: block; width: 100%; height: 100%; }
+      @keyframes waveSlide {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-24%); }
+      }
+
+      .examples .chip { animation: riseIn .5s cubic-bezier(.22, .8, .35, 1) both; }
+      .examples .chip:nth-of-type(1) { animation-delay: .30s; }
+      .examples .chip:nth-of-type(2) { animation-delay: .37s; }
+      .examples .chip:nth-of-type(3) { animation-delay: .44s; }
+      .examples .chip:nth-of-type(4) { animation-delay: .51s; }
+      .examples .chip:nth-of-type(5) { animation-delay: .58s; }
+      .examples .chip:nth-of-type(6) { animation-delay: .65s; }
+
+      .results.show .grid { animation: gridFloat 7s ease-in-out 1.4s infinite alternate; }
+      @keyframes gridFloat {
+        from { transform: translateY(0); }
+        to   { transform: translateY(-3px); }
+      }
+
+      .results.show .actions .btn { animation: riseIn .5s cubic-bezier(.22, .8, .35, 1) both; }
+      .results.show .actions .btn:nth-child(1) { animation-delay: .22s; }
+      .results.show .actions .btn:nth-child(2) { animation-delay: .29s; }
+      .results.show .actions .btn:nth-child(3) { animation-delay: .36s; }
+
+      .history.show li:nth-child(1) .history-item { animation-delay: .04s; }
+      .history.show li:nth-child(2) .history-item { animation-delay: .10s; }
+      .history.show li:nth-child(3) .history-item { animation-delay: .16s; }
+      .history.show li:nth-child(4) .history-item { animation-delay: .22s; }
+      .history.show li:nth-child(5) .history-item { animation-delay: .28s; }
+      .history.show li:nth-child(6) .history-item { animation-delay: .34s; }
+
+      .site-footer { animation: riseIn .6s cubic-bezier(.22, .8, .35, 1) .4s both; }
+
+      @media (prefers-reduced-motion: reduce) {
+        body, .topbar, .wave, .examples .chip,
+        .results.show .grid, .results.show .actions .btn,
+        .site-footer { animation: none; }
+      }
     </style>
   </head>
   <body>
+    <div class="topbar" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero">
         <div class="hero-pin" aria-hidden="true">📍</div>
@@ -494,6 +572,7 @@
         <header class="intro">
           <h1>ZIP Lookup + Test Name Generator</h1>
         </header>
+        <div class="wave" aria-hidden="true"><svg viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0,15 C200,30 400,0 600,15 C800,30 1000,0 1200,15 L1200,30 L0,30 Z" fill="rgba(255,255,255,0.13)"></path></svg></div>
       </div>
 
       <section class="panel lookup" aria-label="ZIP code lookup">
